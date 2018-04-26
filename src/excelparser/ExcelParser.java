@@ -100,7 +100,7 @@ public class ExcelParser {
 		HSSFCell cell;
 
 		Iterator rows = sheet.rowIterator();
-
+                System.out.println("Reading: "+p_path);
 		while (rows.hasNext())
 		{
                     HashMap<String,String> hmColumn = new HashMap<>();
@@ -137,6 +137,7 @@ public class ExcelParser {
                         }
                         iRow++;
 		}
+                System.out.println("Finished Reading: "+iRow+" row");
 	
 	}
 	
@@ -192,6 +193,7 @@ public class ExcelParser {
             
         } catch (IOException ex) {
             Logger.getLogger(ExcelParser.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
 		
 

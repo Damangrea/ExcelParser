@@ -95,6 +95,8 @@ public class Connector {
             }else{
                 InputDeviceToDatabase(p_Retry+1, p_GroupId, p_ArrayDevice);
             }
+        } else {
+            System.out.println("CONNECTION FAILED");
         }
     }
     
