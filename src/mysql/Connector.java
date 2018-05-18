@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import logger.LoggerFile;
 
 /**
  *
@@ -58,15 +59,18 @@ public class Connector {
         }
     }
     
-    public void InputDeviceToDatabase(int p_Retry,String p_GroupId,ArrayList<HashMap<String,String>> p_ArrayDevice){
+    public void InputDeviceToDatabase(int p_Retry,String p_GroupId,ArrayList<HashMap<String,String>> p_ArrayDevice,LoggerFile logger){
         HashMap<String,String> hmTemp;
         String key,keys,values;
         Iterator iterate;
+        int iUpd,iRow=0,iSucceed=0;
         if(p_Retry<5){
             if(conn!=null){
                 try {
+                    conn.setAutoCommit(false);
                     Statement stmt=conn.createStatement();
                     for (int i = 0; i < p_ArrayDevice.size(); i++) {
+                        iRow=i+1;
                         keys="";
                         values="";
                         hmTemp = p_ArrayDevice.get(i);
@@ -82,21 +86,29 @@ public class Connector {
                             }
                         }
                         String sQuery="insert into device("+keys+") values("+values+")";
-                        System.out.println("+++++++++++++++++++++++++++++++++++");
-                        System.out.println(sQuery);
-                        System.out.println("===================================");
-                        stmt.executeUpdate(sQuery);
+                        try {
+                            iUpd=stmt.executeUpdate(sQuery);
+                            if(iUpd==1){
+                                logger.writeLog("Row "+iRow+" insert Succeed");
+                                iSucceed++;
+                            }
+                        } catch (SQLException e) {
+                            logger.writeLog("Row "+iRow+" "+e.getErrorCode()+"-"+e.getSQLState()+" "+e.getLocalizedMessage());       
+                        }
                     }
                     stmt.close();
+                    conn.commit();
+                    logger.writeLog("Succeed : "+iSucceed);
+                    logger.writeLog("Failed : "+(p_ArrayDevice.size()-iSucceed));
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    Logger.getLogger(Connector.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(Connector.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }else{
-                InputDeviceToDatabase(p_Retry+1, p_GroupId, p_ArrayDevice);
+                InputDeviceToDatabase(p_Retry+1, p_GroupId, p_ArrayDevice,logger);
             }
         } else {
-            System.out.println("CONNECTION FAILED");
+            logger.writeLog("CONNECTION FAILED");
         }
     }
     
